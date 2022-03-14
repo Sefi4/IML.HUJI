@@ -1,3 +1,4 @@
+from typing import Tuple
 from IMLearn.learners import UnivariateGaussian, MultivariateGaussian
 import numpy as np
 import plotly.graph_objects as go
@@ -8,6 +9,20 @@ pio.templates.default = "simple_white"
 
 def plot_pdf(uni_gauss: UnivariateGaussian, samples: np.ndarray,
              show: bool = True) -> None:
+    """
+        Plot the PDF of uni-variate Gaussian random variable.
+        X-axis describes the samples.
+        Y-axis describes the probability density.
+
+        uni_gauss:  UnivariateGaussian
+            An instance of UnivariateGaussian.
+
+        samples: samples: np.ndarray
+            The samples to calculate the pdf
+
+        show: bool
+            Whether to show the graph or not.
+    """
     fig = go.Figure()
     x_axis = samples
     y_axis = uni_gauss.pdf(samples)
@@ -34,8 +49,22 @@ def plot_pdf(uni_gauss: UnivariateGaussian, samples: np.ndarray,
         fig.show()
 
 
-def empirical_consistent_univarient_gaussian_estimator(samples: np.ndarray,
-                                                       show: bool = True):
+def empirical_consistent_univarient_gaussian_estimator(
+        samples: np.ndarray, show: bool = True) -> None:
+    """
+    Plot the absolute distance between the estimated expectation to the true
+    expectation of a uni-variate Gaussian random variable over increasing
+    samples.
+    X-axis describes the samples.
+    Y-axis describes the absolute distance between the estimated expectation to
+    the true expectation.
+
+    samples: np.ndarray.
+        The pool of samples to draw from increasingly number of samples.
+
+    show: bool
+        Whether to show the graph or not.
+    """
     uni_gauss = UnivariateGaussian()
     fig = go.Figure()
     x_axis = []
@@ -54,7 +83,8 @@ def empirical_consistent_univarient_gaussian_estimator(samples: np.ndarray,
     ))
 
     fig.update_layout(
-        title="The absolute distance between estimated and true value of expectation",
+        title="The absolute distance between estimated and true value of "
+              "expectation",
         xaxis_title="Sample Size",
         yaxis_title="The absolute error of mean",
         legend_title="Legend Title",
@@ -68,7 +98,31 @@ def empirical_consistent_univarient_gaussian_estimator(samples: np.ndarray,
         fig.show()
 
 
-def generate_log_likelihood_heat_map(samples, cov_matrix):
+def generate_log_likelihood_heat_map(
+        samples: np.ndarray, cov_matrix: np.ndarray, show: bool = True) \
+        -> Tuple[float, float]:
+    """
+    Plot heat map of the log-likelihood of a multivariate normal
+    distribution mean.
+    Mu is of the form [f1, 0, f3, 0] where f1 and f3 have 200 evenly spaced
+    values in the interval [-10, 10].
+    In addition, print the maximus log-likelihood.
+    The covariance matrix is given.
+    X-axis describes f1 value.
+    Y-axis describes f2 value.
+
+    samples: np.ndarray.
+        The samples to calculate over the log-likelihood.
+
+    cov_matrix: np.ndarray.
+        The covariance matrix to calculate over the log-likelihood.
+
+    show: bool.
+        Whether to show the graph or not.
+
+    return: Tuple[float, float].
+        The values of f1 and f3 that maximize the log-likelihood.
+    """
     x_axis = y_axis = np.linspace(-10, 10, 200)
     mu = np.zeros(4)
     z_axis = []
@@ -77,7 +131,8 @@ def generate_log_likelihood_heat_map(samples, cov_matrix):
         row = []
         for j in range(len(y_axis)):
             mu[2] = x_axis[j]
-            row.append(MultivariateGaussian.log_likelihood(mu, cov_matrix, samples))
+            row.append(
+                MultivariateGaussian.log_likelihood(mu, cov_matrix, samples))
         z_axis.append(row)
 
     fig = go.Figure(go.Heatmap(x=x_axis, y=y_axis, z=z_axis))
@@ -93,8 +148,8 @@ def generate_log_likelihood_heat_map(samples, cov_matrix):
             color="RebeccaPurple"
         )
     )
-
-    # fig.show()
+    if show:
+        fig.show()
     max_ind = np.argmax(z_axis)
     x_axis_ind = max_ind // x_axis.size
     y_axis_ind = max_ind % y_axis.size
@@ -148,13 +203,6 @@ def test_multivariate_gaussian():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # test_univariate_gaussian()
+    test_univariate_gaussian()
     test_multivariate_gaussian()
-    # X = np.array(
-    #     [1, 5, 2, 3, 8, -4, -2, 5, 1, 10, -10, 4, 5, 2, 7, 1, 1, 3, 2, -1, -3, 1, -4, 1,
-    #      2, 1, -4, -4, 1, 3, 2, 6, -6, 8, 3, -6, 4, 1, -2, 3, 1, 4, 1, 4, -2, 3, -1, 0,
-    #      3, 5, 0, -2])
-    # s = UnivariateGaussian()
-    # print(s.log_likelihood(1, 1, X))
-    # print(s.log_likelihood(10, 1, X))
-    # print(np.argmax(np.arange(9).reshape(3, 3)))
+

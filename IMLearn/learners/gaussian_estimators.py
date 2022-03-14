@@ -56,7 +56,7 @@ class UnivariateGaussian:
         """
         # raise NotImplementedError()
         self.mu_ = np.mean(X)
-        self.var_ = np.var(X, ddof=self.biased_)
+        self.var_ = np.var(X, ddof=not self.biased_)
         self.fitted_ = True
         return self
 
