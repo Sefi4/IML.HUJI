@@ -1,10 +1,7 @@
 import os
-
 import colorama
-
-from IMLearn.utils import split_train_test
 from IMLearn.learners.regressors import LinearRegression
-
+from IMLearn.utils.utils import split_train_test
 from typing import NoReturn
 import numpy as np
 import pandas as pd
@@ -38,20 +35,15 @@ def load_data(filename: str):
     houses_df = houses_df.drop('id', axis=1)
 
     # Handle categorical data
-    # print(houses_df['zipcode'])
-    # dummies = pd.get_dummies(houses_df['zipcode'])
-    # print(dummies)
-    # houses_df.join(dummies)
-    # print()
-    # print(houses_df['zipcode'])
+    dummies = pd.get_dummies(houses_df['zipcode'], drop_first=True)
+    houses_df = pd.concat([houses_df, dummies], axis=1)
+    houses_df = houses_df.drop('zipcode', axis=1)
 
     # remove rows with unreasonable values
     for feature in houses_df:
         if feature in ("price", 'bedrooms', 'bathrooms', 'sqft_living', 'sqft_lot',
                        'yr_built', 'sqft_living15', 'sqft_lot15'):
             houses_df = houses_df[houses_df[feature] > 0]
-
-
 
     houses_df = houses_df.dropna()
     prices = houses_df.get('price')
@@ -60,23 +52,66 @@ def load_data(filename: str):
 
 
 def get_features_to_response_correlation(X: pd.DataFrame, y: pd.Series) -> pd.Series:
+    """
+    Calculate the correlation of each feature with the target variable y.
+    Parameters
+    ----------
+    X: pd.DataFrame
+        The design matrix.
+
+    y: pd.Series
+        The target variable.
+
+    Returns
+    -------
+     pandas.Series of the correlation of each feature with the target variable y.
+    """
     y_std = y.std()
     return X.apply(lambda col: col.cov(y) / (col.std() * y_std))
 
 
 def pick_k_most_correlated_features(X: pd.DataFrame, y: pd.Series,
                                     k: int) -> pd.DataFrame:
+    """
+    Find the k most correlated features with the target variable.
+    ----------
+    X: pd.DataFrame
+        The design matrix.
+
+    y: pd.Series
+        The target variable.
+
+    k: int
+        The number of features to take.
+
+    Returns
+    -------
+     pd.DataFrame with the k most correlated features.
+    """
     feature_response_corr = get_features_to_response_correlation(X, y)
     if k >= feature_response_corr.shape[0]:
         return X
     feature_response_corr.sort_values(inplace=True, ascending=False)
-    k_best = feature_response_corr.index.values[:k]
-    print("The k most correlated features are:", k_best)
     return X[feature_response_corr.index.values[:k]]
 
 
 def plot_mse(train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame,
              test_Y: pd.Series):
+    """
+    Plot the MSE over increasing number of samples.
+    ----------
+    train_X: pd.DataFrame
+        Training data st.
+
+    train_Y: pd.DataFrame
+        Training target variable.
+
+    test_X: pd.DataFrame
+        Test data frame.
+
+    test_Y: pd.DataFrame
+        Test target variable.
+    """
     lr = LinearRegression(True)
     fig = go.Figure()
     x_axis = np.linspace(10, 100, 91, dtype=int)
@@ -153,7 +188,7 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series,
                      f"Correlation: {feature_response_corr[feature]}</sup>",
             ),
             xaxis_title=f"{feature}",
-            yaxis_title="Correlation",
+            yaxis_title="Price",
             legend_title="Legend Title")
 
         fig.write_image(output_path + f"\\{feature}.jpeg")
@@ -164,19 +199,26 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series,
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
-    houses_df, prices = load_data("C:\Projects\IML\IML.HUJI\datasets\house_prices.csv")
+
+    houses_df, prices = load_data("house_prices.csv")
+    # The next line would pick the 21 most correlated features with the target variable.
+    # We decided not to use this function, because the MSE is higher than if we
+    # wouldn't.
+    # houses_df = pick_k_most_correlated_features(houses_df, prices, 21)
     # raise NotImplementedError()
-    # houses_df = pick_k_most_correlated_features(houses_df, prices, 9)
+
     # Question 2 - Feature evaluation with respect to response
-    # feature_evaluation(houses_df, prices, "C:\Projects\IML\IML.HUJI\ex2_plots")
+
+    feature_evaluation(houses_df, prices, "ex2_plots")
     # raise NotImplementedError()
 
     # Question 3 - Split samples into training- and testing sets.
+
     train_X, train_Y, test_X, test_Y = split_train_test(houses_df, prices)
-    print(train_X.shape, train_Y.shape, test_X.shape, test_Y.shape)
     # raise NotImplementedError()
 
     # Question 4 - Fit model over increasing percentages of the overall training data
+
     # For every percentage p in 10%, 11%, ..., 100%, repeat the following 10 times:
     #   1) Sample p% of the overall training data
     #   2) Fit linear model (including intercept) over sampled set
@@ -184,4 +226,4 @@ if __name__ == '__main__':
     #   4) Store average and variance of loss over test set
     # Then plot average loss as function of training size with error ribbon of size (mean-2*std, mean+2*std)
     # raise NotImplementedError()
-    # plot_mse(train_X, train_Y, test_X, test_Y)
+    plot_mse(train_X, train_Y, test_X, test_Y)

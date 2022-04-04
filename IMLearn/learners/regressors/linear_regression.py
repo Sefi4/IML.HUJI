@@ -52,7 +52,6 @@ class LinearRegression(BaseEstimator):
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
         # raise NotImplementedError()
-        assert X.shape[0] > X.shape[1]
         X = np.c_[np.ones(X.shape[0]), X] if self.include_intercept_ else X
         X_pseudo_inverse = pinv(X)
         self.coefs_ = X_pseudo_inverse @ y
