@@ -1,9 +1,11 @@
+import pandas as pd
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 import numpy as np
 from typing import Tuple
 import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
+
 pio.templates.default = "simple_white"
 
 
@@ -26,7 +28,11 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
         Class vector specifying for each sample its class
 
     """
-    raise NotImplementedError()
+    data = np.load(filename)
+    y = data[:, 2]
+    X = data[:, :2]
+    return X, y
+    # raise NotImplementedError()
 
 
 def run_perceptron():
@@ -36,16 +42,29 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", "linearly_separable.npy"),
+                 ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
-        raise NotImplementedError()
+        X, Y = load_dataset(f'C:\Projects\IML\IML.HUJI\datasets\{f}')
+        # raise NotImplementedError()
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
-        raise NotImplementedError()
+        # TODO should call loss?
+        calc_loss = lambda p, _, __: losses.append(p._loss(X, Y))
+        p = Perceptron(callback=calc_loss)
+        p.fit(X, Y)
+        # raise NotImplementedError()
 
         # Plot figure
-        raise NotImplementedError()
+        fig = go.Figure()
+        x_axis = list(range(1, len(losses)))
+        fig.add_scatter(x=x_axis, y=losses)
+        fig.update_layout(title=f'Preceptron losss over {f} data as a function '
+                                f'of training iterations', xaxis_title='iterations',
+                          yaxis_title='loss')
+        fig.show()
+        # raise NotImplementedError()
 
 
 def compare_gaussian_classifiers():
@@ -68,4 +87,4 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
     run_perceptron()
-    compare_gaussian_classifiers()
+    # compare_gaussian_classifiers()
