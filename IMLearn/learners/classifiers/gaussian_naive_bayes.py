@@ -1,3 +1,4 @@
+import math
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
@@ -48,8 +49,9 @@ class GaussianNaiveBayes(BaseEstimator):
         self.vars_ = []
         for k in range(self.classes_.size):
             indices = np.where(y == self.classes_[k])
-            self.mu_.append(np.sum(X[indices], axis=0) / counts[k])
-            self.vars_.append(np.mean((X[indices] - self.mu_[k]) ** 2, axis=0))
+            self.mu_.append(np.mean(X[indices], axis=0))
+            self.vars_.append(np.var(X[indices], axis=0))
+
         self.vars_ = np.array(self.vars_)
         self.mu_ = np.array(self.mu_)
         self.pi_ = counts / y.size
@@ -71,8 +73,14 @@ class GaussianNaiveBayes(BaseEstimator):
         """
         tmp = []
         for k in range(self.classes_.size):
-            tmp.append(np.sum(-(((X - self.mu_[k]) / self.vars_[k]) ** 2) -
-                              np.log(self.vars_[k]) + np.log(self.pi_[k]), axis=1))
+            # t = np.log((2 * math.pi) * self.vars_[k]) / 2
+            # tmp.append(np.log(self.pi_[k])) + np.sum(
+            #     -((X - self.mu_[k]) ** 2 / 2 * self.vars_[k]) - (
+            #         np.log((2 * math.pi) * self.vars_[k]) / 2), axis=1)
+            tmp.append(np.log(self.pi_[k]) - np.sum(
+                (((X - self.mu_[k]) ** 2) / (2 * self.vars_[k])) +
+                (np.log(self.vars_[k]) / 2), axis=1))
+
         tmp = np.array(tmp)
         indices = np.argmax(tmp, axis=0)
         return np.array(list(map(lambda i: self.classes_[i], indices)))

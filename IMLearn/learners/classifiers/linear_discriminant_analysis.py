@@ -54,14 +54,11 @@ class LDA(BaseEstimator):
         for k in range(self.classes_.size):
             indices = np.where(y == self.classes_[k])
             self.mu_.append(np.mean(X[indices], axis=0))
-            self.cov_ += np.cov(X[indices], rowvar=False, ddof=0) * len(indices)
+            self.cov_ += (np.cov(X[indices], rowvar=False, ddof=0)) * len(indices[0])
 
         self.cov_ /= (X.shape[0] - len(self.classes_))
-        print('cov =', self.cov_)
-        print()
         self._cov_inv = inv(self.cov_)
         self.mu_ = np.array(self.mu_)
-        print('mu =', self.mu_)
         self.pi_ = counts / y.size
         # raise NotImplementedError()
 

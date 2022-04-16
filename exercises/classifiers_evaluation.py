@@ -79,9 +79,11 @@ def compare_gaussian_classifiers():
         # Fit models and predict over training set
         lda = LDA()
         lda.fit(X, y)
+        lda_pred = lda.predict(X)
 
         g = GaussianNaiveBayes()
         g.fit(X, y)
+        g_pred = g.predict(X)
 
         # raise NotImplementedError()
 
@@ -90,14 +92,14 @@ def compare_gaussian_classifiers():
 
         fig = make_subplots(rows=1, cols=2,
                             subplot_titles=(f'LDA, accuracy: '
-                                            f'{accuracy(y, lda.predict(X))}',
+                                            f'{accuracy(y, lda_pred)}',
                                             f'Gaussian Naive Bayes, accuracy'
-                                            f' {accuracy(y, g.predict(X))}'))
+                                            f' {accuracy(y, g_pred)}'))
         fig.add_trace(
             go.Scatter(
                 x=X[:, 0], y=X[:, 1], mode="markers",
                 showlegend=False,
-                marker=dict(color=lda.predict(X), symbol=y,
+                marker=dict(color=lda_pred, symbol=y,
                             line=dict(color="black", width=1))),
             row=1, col=1)
 
@@ -105,16 +107,27 @@ def compare_gaussian_classifiers():
             go.Scatter(
                 x=X[:, 0], y=X[:, 1], mode="markers",
                 showlegend=False,
-                marker=dict(color=g.predict(X), symbol=y,
+                marker=dict(color=g_pred, symbol=y,
                             line=dict(color="black", width=1))),
             row=1, col=2)
-        fig.update_layout(title_text=f)
-        break
-        # fig.show()
-        # raise NotImplementedError()
 
+        mu = []
+        for k in range(len(lda.classes_)):
+            X_k = X[g_pred == lda.classes_[k]]
+            mu.append(np.mean(X_k, axis=0))
+        mu = np.array(mu)
+
+        fig.add_trace(
+            go.Scatter(x=mu[:, 0], y=mu[:, 1], mode="markers", marker_size=15,
+                       showlegend=False,
+                       marker=dict(color='black', symbol=104)),
+            row=1, col=1)
+
+        fig.update_layout(title_text=f)
+        fig.show()
+        # raise NotImplementedError()
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # run_perceptron()
-    compare_gaussian_classifiers()
+# run_perceptron()
+compare_gaussian_classifiers()
