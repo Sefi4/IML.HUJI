@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from plotly.subplots import make_subplots
 
+from IMLearn.metrics import accuracy
+
 pio.templates.default = "simple_white"
 
 
@@ -50,9 +52,7 @@ def run_perceptron():
 
         # Fit Perceptron and record loss in each fit iteration
         losses = []
-        # TODO should call loss?
-        calc_loss = lambda p, _, __: losses.append(p._loss(X, Y))
-        p = Perceptron(callback=calc_loss)
+        p = Perceptron(callback=lambda p, _, __: losses.append(p.loss(X, Y)))
         p.fit(X, Y)
         # raise NotImplementedError()
 
@@ -73,18 +73,48 @@ def compare_gaussian_classifiers():
     """
     for f in ["gaussian1.npy", "gaussian2.npy"]:
         # Load dataset
-        raise NotImplementedError()
+        X, y = load_dataset(f'C:\Projects\IML\IML.HUJI\datasets\{f}')
+        # raise NotImplementedError()
 
         # Fit models and predict over training set
-        raise NotImplementedError()
+        lda = LDA()
+        lda.fit(X, y)
+
+        g = GaussianNaiveBayes()
+        g.fit(X, y)
+
+        # raise NotImplementedError()
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
-        from IMLearn.metrics import accuracy
-        raise NotImplementedError()
+
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=(f'LDA, accuracy: '
+                                            f'{accuracy(y, lda.predict(X))}',
+                                            f'Gaussian Naive Bayes, accuracy'
+                                            f' {accuracy(y, g.predict(X))}'))
+        fig.add_trace(
+            go.Scatter(
+                x=X[:, 0], y=X[:, 1], mode="markers",
+                showlegend=False,
+                marker=dict(color=lda.predict(X), symbol=y,
+                            line=dict(color="black", width=1))),
+            row=1, col=1)
+
+        fig.add_trace(
+            go.Scatter(
+                x=X[:, 0], y=X[:, 1], mode="markers",
+                showlegend=False,
+                marker=dict(color=g.predict(X), symbol=y,
+                            line=dict(color="black", width=1))),
+            row=1, col=2)
+        fig.update_layout(title_text=f)
+        break
+        # fig.show()
+        # raise NotImplementedError()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    run_perceptron()
-    # compare_gaussian_classifiers()
+    # run_perceptron()
+    compare_gaussian_classifiers()

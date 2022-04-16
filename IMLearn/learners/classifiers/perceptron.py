@@ -103,6 +103,7 @@ class Perceptron(BaseEstimator):
             if j == 0 and y_pred[0] > 0:
                 break
             self.coefs_ += y[j] * X[j]
+            self.fitted_ = True
             self.callback_(self, X[j], y[j])
 
         # raise NotImplementedError()
@@ -144,6 +145,6 @@ class Perceptron(BaseEstimator):
         """
         # TODO should call to predict?
         X = np.c_[np.ones(X.shape[0]), X] if self.include_intercept_ else X
-        y_pred = self._predict(X)
+        y_pred = self.predict(X)
         return misclassification_error(y, y_pred)
         # raise NotImplementedError()

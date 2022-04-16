@@ -2,10 +2,14 @@ from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
 
+from ...metrics import misclassification_error
+
+
 class GaussianNaiveBayes(BaseEstimator):
     """
     Gaussian Naive-Bayes classifier
     """
+
     def __init__(self):
         """
         Instantiate a Gaussian Naive Bayes classifier
@@ -39,7 +43,17 @@ class GaussianNaiveBayes(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        self.classes_, counts = np.unique(y, return_counts=True)
+        self.mu_ = []
+        self.vars_ = []
+        for k in range(self.classes_.size):
+            indices = np.where(y == self.classes_[k])
+            self.mu_.append(np.sum(X[indices], axis=0) / counts[k])
+            self.vars_.append(np.mean((X[indices] - self.mu_[k]) ** 2, axis=0))
+        self.vars_ = np.array(self.vars_)
+        self.mu_ = np.array(self.mu_)
+        self.pi_ = counts / y.size
+        # raise NotImplementedError()
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -55,7 +69,14 @@ class GaussianNaiveBayes(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        tmp = []
+        for k in range(self.classes_.size):
+            tmp.append(np.sum(-(((X - self.mu_[k]) / self.vars_[k]) ** 2) -
+                              np.log(self.vars_[k]) + np.log(self.pi_[k]), axis=1))
+        tmp = np.array(tmp)
+        indices = np.argmax(tmp, axis=0)
+        return np.array(list(map(lambda i: self.classes_[i], indices)))
+        # raise NotImplementedError()
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
@@ -73,7 +94,8 @@ class GaussianNaiveBayes(BaseEstimator):
 
         """
         if not self.fitted_:
-            raise ValueError("Estimator must first be fitted before calling `likelihood` function")
+            raise ValueError(
+                "Estimator must first be fitted before calling `likelihood` function")
 
         raise NotImplementedError()
 
@@ -94,4 +116,5 @@ class GaussianNaiveBayes(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        return misclassification_error(y, self.predict(X))
+        # raise NotImplementedError()

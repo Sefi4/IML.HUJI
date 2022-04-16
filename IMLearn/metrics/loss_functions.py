@@ -1,3 +1,5 @@
+import collections
+
 import numpy as np
 import sklearn.metrics
 
@@ -43,7 +45,7 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray,
     Misclassification of given predictions
     """
     n = y_true.size
-    res = np.sum(y_true * y_pred <= 0)
+    res = np.sum(y_true != y_pred)
     return res if not normalize else res / n
     # raise NotImplementedError()
 
@@ -63,7 +65,9 @@ def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     -------
     Accuracy of given predictions
     """
-    raise NotImplementedError()
+    miss = misclassification_error(y_true, y_pred, False)
+    return (y_true.size - miss) / y_true.size
+    # raise NotImplementedError()
 
 
 def cross_entropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
@@ -82,10 +86,3 @@ def cross_entropy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     Cross entropy of given predictions
     """
     raise NotImplementedError()
-
-
-if __name__ == '__main__':
-    y_true = np.array([1, 1, 1, 1, 1, 1])
-    # y_pred = np.array([1, 1, -1, 1, -1, 1])
-    # print(misclassification_error(y_true, y_pred, False))
-    print(np.argmax(y_true < 0))
