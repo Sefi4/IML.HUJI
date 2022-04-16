@@ -44,9 +44,8 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray,
     -------
     Misclassification of given predictions
     """
-    n = y_true.size
     res = np.sum(y_true != y_pred)
-    return res if not normalize else res / n
+    return res if not normalize else res / y_true.size
     # raise NotImplementedError()
 
 

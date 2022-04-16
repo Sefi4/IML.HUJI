@@ -143,8 +143,7 @@ class Perceptron(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        # TODO should call to predict?
         X = np.c_[np.ones(X.shape[0]), X] if self.include_intercept_ else X
         y_pred = self.predict(X)
-        return misclassification_error(y, y_pred)
+        return np.sum((y_pred * y) <= 0) / y.size
         # raise NotImplementedError()

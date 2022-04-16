@@ -37,7 +37,8 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", "linearly_separable.npy"),
+                 ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
         X, Y = load_dataset(f'C:\Projects\IML\IML.HUJI\datasets\{f}')
         # raise NotImplementedError()
@@ -56,7 +57,7 @@ def run_perceptron():
                                 f'of training iterations', xaxis_title='iterations',
                           yaxis_title='loss')
         fig.show()
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
 
 def get_ellipse(mu: np.ndarray, cov: np.ndarray):
@@ -76,7 +77,8 @@ def get_ellipse(mu: np.ndarray, cov: np.ndarray):
         scatter: A plotly trace object of the ellipse
     """
     l1, l2 = tuple(np.linalg.eigvalsh(cov)[::-1])
-    theta = atan2(l1 - cov[0, 0], cov[0, 1]) if cov[0, 1] != 0 else (np.pi / 2 if cov[0, 0] < cov[1, 1] else 0)
+    theta = atan2(l1 - cov[0, 0], cov[0, 1]) if cov[0, 1] != 0 else (
+        np.pi / 2 if cov[0, 0] < cov[1, 1] else 0)
     t = np.linspace(0, 2 * pi, 100)
     xs = (l1 * np.cos(theta) * np.cos(t)) - (l2 * np.sin(theta) * np.sin(t))
     ys = (l1 * np.sin(theta) * np.cos(t)) + (l2 * np.cos(theta) * np.sin(t))
@@ -107,10 +109,52 @@ def compare_gaussian_classifiers():
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
         from IMLearn.metrics import accuracy
-        raise NotImplementedError()
+
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=(f'LDA, accuracy: '
+                                            f'{accuracy(y, lda_pred)}',
+                                            f'Gaussian Naive Bayes, accuracy'
+                                            f' {accuracy(y, g_pred)}'))
+        fig.add_trace(
+            go.Scatter(
+                x=X[:, 0], y=X[:, 1], mode="markers",
+                showlegend=False,
+                marker=dict(color=lda_pred, symbol=y,
+                            line=dict(color="black", width=1))),
+            row=1, col=1)
+
+        fig.add_trace(
+            go.Scatter(
+                x=X[:, 0], y=X[:, 1], mode="markers",
+                showlegend=False,
+                marker=dict(color=g_pred, symbol=y,
+                            line=dict(color="black", width=1))),
+            row=1, col=2)
+
+        # Add ellipses for each class and classifier
+        for k in range(len(lda.classes_)):
+            fig.add_trace(get_ellipse(lda.mu_[k], lda.cov_), row=1, col=1)
+            fig.add_trace(get_ellipse(g.mu_[k], np.diag(g.vars_[k])), row=1, col=2)
+
+        # Mark with X ellipse center
+        fig.add_trace(
+            go.Scatter(x=lda.mu_[:, 0], y=lda.mu_[:, 1], mode="markers", marker_size=10,
+                       showlegend=False,
+                       marker=dict(color='black', symbol='x')),
+            row=1, col=1)
+
+        fig.add_trace(
+            go.Scatter(x=g.mu_[:, 0], y=g.mu_[:, 1], mode="markers", marker_size=10,
+                       showlegend=False,
+                       marker=dict(color='black', symbol='x')),
+            row=1, col=2)
+
+        fig.update_layout(title_text=f)
+        fig.show()
+        # raise NotImplementedError()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-# run_perceptron()
-compare_gaussian_classifiers()
+    run_perceptron()
+    compare_gaussian_classifiers()
