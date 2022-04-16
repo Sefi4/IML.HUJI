@@ -73,10 +73,6 @@ class GaussianNaiveBayes(BaseEstimator):
         """
         tmp = []
         for k in range(self.classes_.size):
-            # t = np.log((2 * math.pi) * self.vars_[k]) / 2
-            # tmp.append(np.log(self.pi_[k])) + np.sum(
-            #     -((X - self.mu_[k]) ** 2 / 2 * self.vars_[k]) - (
-            #         np.log((2 * math.pi) * self.vars_[k]) / 2), axis=1)
             tmp.append(np.log(self.pi_[k]) - np.sum(
                 (((X - self.mu_[k]) ** 2) / (2 * self.vars_[k])) +
                 (np.log(self.vars_[k]) / 2), axis=1))
