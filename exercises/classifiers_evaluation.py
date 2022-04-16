@@ -1,14 +1,10 @@
-import pandas as pd
 from IMLearn.learners.classifiers import Perceptron, LDA, GaussianNaiveBayes
 import numpy as np
 from typing import Tuple
+from utils import *
 import plotly.graph_objects as go
-import plotly.io as pio
 from plotly.subplots import make_subplots
-
-from IMLearn.metrics import accuracy
-
-pio.templates.default = "simple_white"
+from math import atan2, pi
 
 
 def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -31,10 +27,7 @@ def load_dataset(filename: str) -> Tuple[np.ndarray, np.ndarray]:
 
     """
     data = np.load(filename)
-    y = data[:, 2]
-    X = data[:, :2]
-    return X, y
-    # raise NotImplementedError()
+    return data[:, :2], data[:, 2].astype(int)
 
 
 def run_perceptron():
@@ -44,8 +37,7 @@ def run_perceptron():
     Create a line plot that shows the perceptron algorithm's training loss values (y-axis)
     as a function of the training iterations (x-axis).
     """
-    for n, f in [("Linearly Separable", "linearly_separable.npy"),
-                 ("Linearly Inseparable", "linearly_inseparable.npy")]:
+    for n, f in [("Linearly Separable", "linearly_separable.npy"), ("Linearly Inseparable", "linearly_inseparable.npy")]:
         # Load dataset
         X, Y = load_dataset(f'C:\Projects\IML\IML.HUJI\datasets\{f}')
         # raise NotImplementedError()
@@ -64,7 +56,32 @@ def run_perceptron():
                                 f'of training iterations', xaxis_title='iterations',
                           yaxis_title='loss')
         fig.show()
-        # raise NotImplementedError()
+        raise NotImplementedError()
+
+
+def get_ellipse(mu: np.ndarray, cov: np.ndarray):
+    """
+    Draw an ellipse centered at given location and according to specified covariance matrix
+
+    Parameters
+    ----------
+    mu : ndarray of shape (2,)
+        Center of ellipse
+
+    cov: ndarray of shape (2,2)
+        Covariance of Gaussian
+
+    Returns
+    -------
+        scatter: A plotly trace object of the ellipse
+    """
+    l1, l2 = tuple(np.linalg.eigvalsh(cov)[::-1])
+    theta = atan2(l1 - cov[0, 0], cov[0, 1]) if cov[0, 1] != 0 else (np.pi / 2 if cov[0, 0] < cov[1, 1] else 0)
+    t = np.linspace(0, 2 * pi, 100)
+    xs = (l1 * np.cos(theta) * np.cos(t)) - (l2 * np.sin(theta) * np.sin(t))
+    ys = (l1 * np.sin(theta) * np.cos(t)) + (l2 * np.cos(theta) * np.sin(t))
+
+    return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines", marker_color="black")
 
 
 def compare_gaussian_classifiers():
@@ -89,43 +106,9 @@ def compare_gaussian_classifiers():
 
         # Plot a figure with two suplots, showing the Gaussian Naive Bayes predictions on the left and LDA predictions
         # on the right. Plot title should specify dataset used and subplot titles should specify algorithm and accuracy
+        from IMLearn.metrics import accuracy
+        raise NotImplementedError()
 
-        fig = make_subplots(rows=1, cols=2,
-                            subplot_titles=(f'LDA, accuracy: '
-                                            f'{accuracy(y, lda_pred)}',
-                                            f'Gaussian Naive Bayes, accuracy'
-                                            f' {accuracy(y, g_pred)}'))
-        fig.add_trace(
-            go.Scatter(
-                x=X[:, 0], y=X[:, 1], mode="markers",
-                showlegend=False,
-                marker=dict(color=lda_pred, symbol=y,
-                            line=dict(color="black", width=1))),
-            row=1, col=1)
-
-        fig.add_trace(
-            go.Scatter(
-                x=X[:, 0], y=X[:, 1], mode="markers",
-                showlegend=False,
-                marker=dict(color=g_pred, symbol=y,
-                            line=dict(color="black", width=1))),
-            row=1, col=2)
-
-        mu = []
-        for k in range(len(lda.classes_)):
-            X_k = X[g_pred == lda.classes_[k]]
-            mu.append(np.mean(X_k, axis=0))
-        mu = np.array(mu)
-
-        fig.add_trace(
-            go.Scatter(x=mu[:, 0], y=mu[:, 1], mode="markers", marker_size=15,
-                       showlegend=False,
-                       marker=dict(color='black', symbol=104)),
-            row=1, col=1)
-
-        fig.update_layout(title_text=f)
-        fig.show()
-        # raise NotImplementedError()
 
 if __name__ == '__main__':
     np.random.seed(0)
