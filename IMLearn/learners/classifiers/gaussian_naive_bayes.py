@@ -1,8 +1,7 @@
-import math
+from functools import reduce
 from typing import NoReturn
 from ...base import BaseEstimator
 import numpy as np
-
 from ...metrics import misclassification_error
 
 
@@ -50,7 +49,7 @@ class GaussianNaiveBayes(BaseEstimator):
         for k in range(self.classes_.size):
             indices = np.where(y == self.classes_[k])
             self.mu_.append(np.mean(X[indices], axis=0))
-            self.vars_.append(np.var(X[indices], axis=0))
+            self.vars_.append(np.var(X[indices], axis=0, ddof=1))
 
         self.vars_ = np.array(self.vars_)
         self.mu_ = np.array(self.mu_)
@@ -100,8 +99,15 @@ class GaussianNaiveBayes(BaseEstimator):
         if not self.fitted_:
             raise ValueError(
                 "Estimator must first be fitted before calling `likelihood` function")
+        res = []
+        for k in range(len(self.classes_)):
+            tmp = np.exp(- (X - self.mu_[k]) ** 2 / (2 * self.vars_[k])) / \
+                  np.sqrt(2 * np.pi * self.vars_[k])
+            res.append(reduce(lambda x, y: x * y, tmp.T))
+        res = np.array(res)
+        return np.transpose(res)
 
-        raise NotImplementedError()
+        # raise NotImplementedError()
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -122,3 +128,18 @@ class GaussianNaiveBayes(BaseEstimator):
         """
         return misclassification_error(y, self.predict(X))
         # raise NotImplementedError()
+
+
+# if __name__ == '__main__':
+#     g = GaussianNaiveBayes()
+#     tmp = [([1, 1], 0), ([1, 2], 0), ([2, 3], 1), ([2, 4], 1), ([3, 3], 1), ([3, 4], 1)]
+#     X = []
+#     y = []
+#     for pair in tmp:
+#         X.append(pair[0])
+#         y.append(pair[1])
+#     X, y = np.array(X), np.array(y)
+#     g.fit(X, y)
+#     print(g.vars_)
+#     # print(g.pi_)
+#     # print(g.mu_)

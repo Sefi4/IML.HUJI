@@ -53,7 +53,7 @@ def run_perceptron():
         fig = go.Figure()
         x_axis = list(range(1, len(losses)))
         fig.add_scatter(x=x_axis, y=losses)
-        fig.update_layout(title=f'Preceptron losss over {f} data as a function '
+        fig.update_layout(title=f'Preceptron losss over {n} data as a function '
                                 f'of training iterations', xaxis_title='iterations',
                           yaxis_title='loss')
         fig.show()
@@ -149,7 +149,7 @@ def compare_gaussian_classifiers():
                        marker=dict(color='black', symbol='x')),
             row=1, col=2)
 
-        fig.update_layout(title_text=f)
+        fig.update_layout(title_text=f, xaxis_title='Feature 1', yaxis_title='Feature 2')
         fig.show()
         # raise NotImplementedError()
 

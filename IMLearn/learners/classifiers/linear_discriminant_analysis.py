@@ -106,10 +106,14 @@ class LDA(BaseEstimator):
         if not self.fitted_:
             raise ValueError(
                 "Estimator must first be fitted before calling `likelihood` function")
-        d = X[np.newaxis, :, :]
-
-        # mahalanobis = np.sum(d.dot(inv(cov)) * d)
-        raise NotImplementedError()
+        res = []
+        for k in range(len(self.classes_)):
+            d = X[:, np.newaxis, :] - self.mu_[k]
+            t = np.sum(d.dot(inv(self.cov_)) * d, axis=2).flatten()
+            res.append(np.exp(-.5 * t) / np.sqrt((2 * np.pi) ** len(X) * det(self.cov_)))
+        res = np.array(res)
+        return np.transpose(res)
+        # raise NotImplementedError()
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
