@@ -156,5 +156,9 @@ def compare_gaussian_classifiers():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    run_perceptron()
-    compare_gaussian_classifiers()
+    # run_perceptron()
+    # compare_gaussian_classifiers()
+    coefs = np.array([1,2,3])
+    xi = np.array([1, 1, 1])
+    print(coefs @ np.transpose(xi))
+

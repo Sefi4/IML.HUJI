@@ -10,10 +10,10 @@ from datetime import datetime
 
 def _preprocess(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     # Cast dates columns to be real dates
-    df['booking_datetime'] = pd.to_datetime(df['booking_datetime']).dt.date
-    df['checkin_date'] = pd.to_datetime(df['checkin_date']).dt.date
-    df['checkout_date'] = pd.to_datetime(df['checkout_date']).dt.date
-    df['cancellation_datetime'] = pd.to_datetime(df['cancellation_datetime']).dt.date
+    df['booking_datetime'] = pd.to_datetime(df['booking_datetime'])
+    df['checkin_date'] = pd.to_datetime(df['checkin_date'])
+    df['checkout_date'] = pd.to_datetime(df['checkout_date'])
+    df['cancellation_datetime'] = pd.to_datetime(df['cancellation_datetime'])
 
     # Remove unreasonable data
     df = df[df['booking_datetime'] <= df['checkin_date']]
@@ -27,6 +27,7 @@ def _preprocess(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     # Cast bool features to 0/1
     df['foreign_booking'] = df['foreign_booking'].astype(int)
     df['is_user_logged_in'] = df['is_user_logged_in'].astype(int)
+
 
     # Add dummies instead of hotel id and accommodation_type_name, hotel_city_code,
     # hotel_area_code
@@ -43,15 +44,49 @@ def _preprocess(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
     df['charge_option'] = df['charge_option'].replace({'Pay Now': 1, 'Pay Later': 2,
                                                        'Pay at Check-in': 3})
 
-    date1 = datetime.fromisoformat("2018-12-07").date()
-    date2 = datetime.fromisoformat("2018-12-13").date()
+    # date1 = pd.to_datetime("2018-12-07")
+    # date2 = pd.to_datetime("2018-12-13")
+    # # print(date2 > df['cancellation_datetime'])
+    #
+    # # df["cancellation_datetime"] = df["cancellation_datetime"].fillna(0)
+    #
+    # isCancelled = (df['cancellation_datetime'] >= date1) & (
+    #         df['cancellation_datetime'] <= date2)
+    #
+    # # print(isCancelled)
+    #
+    # df.loc[(df['cancellation_datetime'] >= date1) & (
+    #         df['cancellation_datetime'] <= date2), 'cancellation_datetime'] = True
+    #
+    # df.loc[~((df['cancellation_datetime'] >= date1) & (
+    #         df['cancellation_datetime'] <= date2)), 'cancellation_datetime'] = False
+
+    # df = df[df['cancellation_datetime'].between(a, b, inclusive=True)]
+
+    # Handle dates:
+
+    df['cancellation_year'] = pd.DatetimeIndex(df['cancellation_datetime']).year
+    df['cancellation_day_of_year'] = df['cancellation_datetime'].dt.day_of_year
+
+    df['booking_year'] = pd.DatetimeIndex(df['booking_datetime']).year
+    df['booking_day_of_year'] = df['booking_datetime'].dt.day_of_year
+
+    df['checkin_day_of_year'] = df['checkin_date'].dt.day_of_year
+
+    df['checkout_day_of_year'] = df['checkout_date'].dt.day_of_year
 
     df["cancellation_datetime"] = df["cancellation_datetime"].fillna(0)
-    df.mask(
-        (df['cancellation_datetime'] >= date1) & (df['cancellation_datetime'] <= date2),
-        True, False)
-    response = df['cancellation_datetime']
+    df[df["cancellation_datetime"] != 0] = 1
     print(df['cancellation_datetime'])
+
+    df['cancellation_year'] = df['cancellation_year'].replace({2017: 0, 2018: 2, 2019: 1})
+    df['booking_year'] = df['booking_year'].replace({2017: 0, 2018: 1})
+
+    # print(df['cancellation_year', 'cancellation_day_of_year'])
+
+    response = df['cancellation_datetime']
+    # print(df[df['cancellation_datetime'] == True])
+
     # remove those features:
     to_drop = ["h_booking_id", "hotel_id",
                'hotel_chain_code', 'hotel_brand_code', 'hotel_live_date',
@@ -63,9 +98,7 @@ def _preprocess(df: pd.DataFrame) -> Tuple[pd.DataFrame, pd.Series]:
                'cancellation_policy_code', 'hotel_country_code',
                'origin_country_code', 'original_payment_currency']
 
-    to_drop.extend(['booking_datetime', 'checkin_date', 'checkout_date',
-                    'cancellation_datetime'])
-
+    to_drop.extend(['booking_datetime', 'checkin_date', 'checkout_date'])
     df = df.drop(to_drop, axis=1)
     # return df, target
     return df, response
@@ -88,7 +121,10 @@ def load_data(filename: str):
     """
     # TODO - replace below code with any desired preprocessing
     df = pd.read_csv(filename).drop_duplicates()
-    return _preprocess(df)
+    df, y = _preprocess(df)
+    # df, y = df.dropna(), y.dropna()
+
+    return df, y
 
 
 def evaluate_and_export(estimator: BaseEstimator, X: np.ndarray, filename: str):
