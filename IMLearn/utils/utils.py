@@ -21,7 +21,7 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
 
     Returns
     -------
-    train_X : DataFrame of shape (ceil(train_proportion * n_samples), n_features)
+    df : DataFrame of shape (ceil(train_proportion * n_samples), n_features)
         Design matrix of train set
 
     train_y : Series of shape (ceil(train_proportion * n_samples), )

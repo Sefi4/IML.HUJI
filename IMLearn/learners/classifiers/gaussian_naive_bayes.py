@@ -1,8 +1,8 @@
 from functools import reduce
 from typing import NoReturn
-from ...base import BaseEstimator
+from IMLearn.base import BaseEstimator
 import numpy as np
-from ...metrics import misclassification_error
+from IMLearn.metrics import misclassification_error
 
 
 class GaussianNaiveBayes(BaseEstimator):

@@ -100,7 +100,7 @@ def plot_mse(train_X: pd.DataFrame, train_Y: pd.Series, test_X: pd.DataFrame,
     """
     Plot the MSE over increasing number of samples.
     ----------
-    train_X: pd.DataFrame
+    df: pd.DataFrame
         Training data st.
 
     train_Y: pd.DataFrame

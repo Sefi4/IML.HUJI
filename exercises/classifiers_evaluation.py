@@ -53,9 +53,10 @@ def run_perceptron():
         fig = go.Figure()
         x_axis = list(range(1, len(losses)))
         fig.add_scatter(x=x_axis, y=losses)
-        fig.update_layout(title=f'Preceptron losss over {n} data as a function '
-                                f'of training iterations', xaxis_title='iterations',
-                          yaxis_title='loss')
+        fig.update_layout(
+            title=f'Preceptron losss over {n} data as a function '
+                  f'of training iterations', xaxis_title='iterations',
+            yaxis_title='loss')
         fig.show()
         # raise NotImplementedError()
 
@@ -83,7 +84,8 @@ def get_ellipse(mu: np.ndarray, cov: np.ndarray):
     xs = (l1 * np.cos(theta) * np.cos(t)) - (l2 * np.sin(theta) * np.sin(t))
     ys = (l1 * np.sin(theta) * np.cos(t)) + (l2 * np.cos(theta) * np.sin(t))
 
-    return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines", marker_color="black")
+    return go.Scatter(x=mu[0] + xs, y=mu[1] + ys, mode="lines",
+                      marker_color="black")
 
 
 def compare_gaussian_classifiers():
@@ -134,31 +136,34 @@ def compare_gaussian_classifiers():
         # Add ellipses for each class and classifier
         for k in range(len(lda.classes_)):
             fig.add_trace(get_ellipse(lda.mu_[k], lda.cov_), row=1, col=1)
-            fig.add_trace(get_ellipse(g.mu_[k], np.diag(g.vars_[k])), row=1, col=2)
+            fig.add_trace(get_ellipse(g.mu_[k], np.diag(g.vars_[k])), row=1,
+                          col=2)
 
         # Mark with X ellipse center
         fig.add_trace(
-            go.Scatter(x=lda.mu_[:, 0], y=lda.mu_[:, 1], mode="markers", marker_size=10,
+            go.Scatter(x=lda.mu_[:, 0], y=lda.mu_[:, 1], mode="markers",
+                       marker_size=10,
                        showlegend=False,
                        marker=dict(color='black', symbol='x')),
             row=1, col=1)
 
         fig.add_trace(
-            go.Scatter(x=g.mu_[:, 0], y=g.mu_[:, 1], mode="markers", marker_size=10,
+            go.Scatter(x=g.mu_[:, 0], y=g.mu_[:, 1], mode="markers",
+                       marker_size=10,
                        showlegend=False,
                        marker=dict(color='black', symbol='x')),
             row=1, col=2)
 
-        fig.update_layout(title_text=f, xaxis_title='Feature 1', yaxis_title='Feature 2')
+        fig.update_layout(title_text=f, xaxis_title='Feature 1',
+                          yaxis_title='Feature 2')
         fig.show()
         # raise NotImplementedError()
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # run_perceptron()
-    # compare_gaussian_classifiers()
-    coefs = np.array([1,2,3])
-    xi = np.array([1, 1, 1])
-    print(coefs @ np.transpose(xi))
-
+    run_perceptron()
+    compare_gaussian_classifiers()
+    # coefs = np.array([1, 2, 3])
+    # xi = np.array([1, 1, 1])
+    # print(coefs @ np.transpose(xi))
