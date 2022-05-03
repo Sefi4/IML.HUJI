@@ -158,7 +158,14 @@ if __name__ == '__main__':
     np.random.seed(0)
     # run_perceptron()
     # compare_gaussian_classifiers()
-    coefs = np.array([1,2,3])
-    xi = np.array([1, 1, 1])
-    print(coefs @ np.transpose(xi))
+    g = GaussianNaiveBayes()
+    tmp = [([1, 1], 0), ([1, 2], 0), ([2, 3], 1), ([2, 4], 1), ([3, 3], 1), ([3, 4], 1)]
+    X = []
+    y = []
+    for pair in tmp:
+        X.append(pair[0])
+        y.append(pair[1])
+    X, y = np.array(X), np.array(y)
+    g.fit(X, y)
+    print(g.vars_)
 
