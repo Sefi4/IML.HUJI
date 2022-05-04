@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Tuple, NoReturn
-from ...base import BaseEstimator
+import pandas as pd
+from IMLearn.metrics import misclassification_error
+from IMLearn.base import BaseEstimator
 import numpy as np
 from itertools import product
 
@@ -20,6 +22,7 @@ class DecisionStump(BaseEstimator):
     self.sign_: int
         The label to predict for samples where the value of the j'th feature is about the threshold
     """
+
     def __init__(self) -> DecisionStump:
         """
         Instantiate a Decision stump classifier
@@ -39,7 +42,20 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        # raise NotImplementedError()
+        sorted_X_indices = np.argsort(X, axis=0)
+        X = np.take_along_axis(X, sorted_X_indices, axis=0)
+        min_threshold_err = float('inf')
+        for j, sign in product(np.arange(X.shape[1]), [-1, 1]):
+            indices = sorted_X_indices[:, j]
+            thr, thr_error = self._find_threshold(X[:, j], y[indices], sign)
+            if thr_error < min_threshold_err:
+                self.j_ = j
+                self.threshold_ = thr
+                self.sign_ = sign
+                min_threshold_err = thr_error
+            if thr_error == 0:
+                break
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -63,9 +79,14 @@ class DecisionStump(BaseEstimator):
         Feature values strictly below threshold are predicted as `-sign` whereas values which equal
         to or above the threshold are predicted as `sign`
         """
-        raise NotImplementedError()
+        # raise NotImplementedError()
+        mask = X[:, self.j_] < self.threshold_
+        y_pred = np.full(X.shape[0], self.sign_)
+        y_pred[mask] = -self.sign_
+        return y_pred
 
-    def _find_threshold(self, values: np.ndarray, labels: np.ndarray, sign: int) -> Tuple[float, float]:
+    def _find_threshold(self, values: np.ndarray, labels: np.ndarray, sign: int) -> \
+            Tuple[float, float]:
         """
         Given a feature vector and labels, find a threshold by which to perform a split
         The threshold is found according to the value minimizing the misclassification
@@ -92,10 +113,27 @@ class DecisionStump(BaseEstimator):
 
         Notes
         -----
-        For every tested threshold, values strictly below threshold are predicted as `-sign` whereas values
-        which equal to or above the threshold are predicted as `sign`
+        For every tested threshold, values strictly below threshold are predicted as
+        `-sign` whereas values which equal to or above the threshold are predicted as
+        `sign`
         """
-        raise NotImplementedError()
+        # raise NotImplementedError()
+        y_pred = np.full(values.size, sign)
+        weights = np.abs(labels)
+        y = np.sign(labels)
+        min_thr_err = float('inf')
+        thr = None
+        for i in range(y_pred.size):
+            if i > 0 and values[i] == values[i-1]:
+                y_pred[i] = -sign
+                continue
+            mask = y_pred != y
+            thr_err = np.abs(np.sum(weights[mask]) / labels.size)
+            if thr_err < min_thr_err:
+                min_thr_err = thr_err
+                thr = values[i]
+            y_pred[i] = -sign
+        return thr, min_thr_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -114,4 +152,16 @@ class DecisionStump(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        # raise NotImplementedError()
+        return misclassification_error(y, self.predict(X))
+
+
+
+# if __name__ == '__main__':
+#     ds = DecisionStump()
+#     X = np.array([[7, 2, 3],
+#                   [4, 1, 6],
+#                   [2, 8, 9]])
+#     y = np.array([1, -1, 1])
+#     ds.fit(X, y)
+#     print(ds.predict(X))
