@@ -128,7 +128,7 @@ class DecisionStump(BaseEstimator):
                 y_pred[i] = -sign
                 continue
             mask = y_pred != y
-            thr_err = np.abs(np.sum(weights[mask]) / labels.size)
+            thr_err = np.sum(weights[mask] / labels.size)
             if thr_err < min_thr_err:
                 min_thr_err = thr_err
                 thr = values[i]

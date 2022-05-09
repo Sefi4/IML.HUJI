@@ -77,7 +77,7 @@ class AdaBoost(BaseEstimator):
             Predicted responses of given samples
         """
         # raise NotImplementedError()
-        return np.sign(self.partial_predict(X, self.iterations_))
+        return self.partial_predict(X, self.iterations_)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -119,8 +119,9 @@ class AdaBoost(BaseEstimator):
         # raise NotImplementedError()
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling ``predict``")
-        predictions = [self.models_[i].predict(X) * self.weights_[i] for i in range(T)]
-        predictions = np.sum(np.array(predictions), axis=0)
+        predictions = [self.models_[i].predict(X) * self.weights_[i] for i in \
+                range(T)]
+        predictions = np.sign(np.sum(predictions, axis=0))
         return predictions
 
     def partial_loss(self, X: np.ndarray, y: np.ndarray, T: int) -> float:
