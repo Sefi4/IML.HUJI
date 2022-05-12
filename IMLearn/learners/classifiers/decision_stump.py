@@ -123,16 +123,17 @@ class DecisionStump(BaseEstimator):
         y = np.sign(labels)
         min_thr_err = float('inf')
         thr = None
-        for i in range(y_pred.size):
-            if i > 0 and values[i] == values[i-1]:
+        for i in range(y_pred.size + 1):
+            if (0 < i < y_pred.size) and values[i] == values[i-1]:
                 y_pred[i] = -sign
                 continue
             mask = y_pred != y
             thr_err = np.sum(weights[mask] / labels.size)
             if thr_err < min_thr_err:
                 min_thr_err = thr_err
-                thr = values[i]
-            y_pred[i] = -sign
+                thr = values[i] if i < y_pred.size else np.inf
+            if i < y_pred.size:
+                y_pred[i] = -sign
         return thr, min_thr_err
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
@@ -155,13 +156,3 @@ class DecisionStump(BaseEstimator):
         # raise NotImplementedError()
         return misclassification_error(y, self.predict(X))
 
-
-
-# if __name__ == '__main__':
-#     ds = DecisionStump()
-#     X = np.array([[7, 2, 3],
-#                   [4, 1, 6],
-#                   [2, 8, 9]])
-#     y = np.array([1, -1, 1])
-#     ds.fit(X, y)
-#     print(ds.predict(X))
