@@ -37,7 +37,7 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
     # raise NotImplementedError()
     trainX = X.sample(frac=train_proportion)
     testX = X.drop(trainX.index)
-    trainY = y.loc[trainX.index.values]
+    trainY = y.iloc[trainX.index.values]
     testY = y.drop(trainY.index)
     return trainX, trainY, testX, testY
 
