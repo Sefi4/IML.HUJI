@@ -65,11 +65,17 @@ class RidgeRegression(BaseEstimator):
         if self.lam_ == 0:
             self.coefs_ = LinearRegression(self.include_intercept_).fit(X, y).coefs_
         else:
+            # X = np.c_[np.ones(X.shape[0]), X] if self.include_intercept_ else X
+            # tmp = X.T @ X
+            # tmp[np.diag_indices_from(tmp)] += self.lam_
+            # tmp[0][0] -= self.lam_  # Don't regularize intercept
+            # self.coefs_ = np.linalg.inv(tmp) @ X.T @ y
             X = np.c_[np.ones(X.shape[0]), X] if self.include_intercept_ else X
-            tmp = X.T @ X
-            tmp[np.diag_indices_from(tmp)] += self.lam_
-            tmp[0][0] -= self.lam_  # Don't regularize intercept
-            self.coefs_ = np.linalg.inv(tmp) @ X.T @ y
+            I = np.identity(X.shape[1])
+            if self.include_intercept_:
+                I[0][0] = 0
+            self.coefs_ = np.linalg.inv(X.T @ X + self.lam_ * I) @ X.T @ y
+
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """

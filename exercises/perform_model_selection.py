@@ -50,7 +50,7 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
     # Question 2 - Perform CV for polynomial fitting with degrees 0,1,...,10
     train_scores = []
     validation_scores = []
-    for k in range(10):
+    for k in range(11):
         train_score, validation_score = cross_validate(
             PolynomialFitting(k), trainX, trainY,
             lambda y_true, y_pred, *args: mean_square_error(y_true, y_pred))
@@ -58,8 +58,8 @@ def select_polynomial_degree(n_samples: int = 100, noise: float = 5):
         validation_scores.append(validation_score)
 
     fig = go.Figure()
-    fig.add_traces([go.Scatter(x=np.arange(10), y=train_scores, name='Train Scores'),
-                    go.Scatter(x=np.arange(10), y=validation_scores,
+    fig.add_traces([go.Scatter(x=np.arange(11), y=train_scores, name='Train Scores'),
+                    go.Scatter(x=np.arange(11), y=validation_scores,
                                name='Validation Scores')])
     fig.update_layout(
         title_text="The Average Validation And Train Scores As a Function Of "
@@ -91,29 +91,31 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     """
     # Question 6 - Load diabetes dataset and split into training and testing portions
     X, y = datasets.load_diabetes(return_X_y=True, as_frame=True)
-    trainX, trainY, testX, testY = split_train_test(X, y, train_proportion=(
-                n_samples / y.size))
-    trainX, trainY, testX, testY = trainX.to_numpy(), trainY.to_numpy(), \
-                                   testX.to_numpy(), testY.to_numpy()
+    trainX, trainY, testX, testY = X[:n_samples], y[:n_samples], X[n_samples:], \
+                                   y[n_samples:]
 
     # Question 7 - Perform CV for different values of the regularization parameter for
     # Ridge and Lasso regressions
-    ridge_lambdas = np.linspace(0.001, 0.01, n_evaluations)
+    ridge_lambdas = np.linspace(0.001, 0.1, n_evaluations)
     ridge_train_scores = []
     ridge_validation_scores = []
 
-    lasso_lambdas = np.linspace(0.01, 0.2, n_evaluations)
+    lasso_lambdas = np.linspace(0.15, 1, n_evaluations)
     lasso_train_scores = []
     lasso_validation_scores = []
     for ridge_lambda, lasso_lambda in zip(ridge_lambdas, lasso_lambdas):
         ridge_train_score, ridge_validation_score = cross_validate(
-            RidgeRegression(ridge_lambda), X, y,
+            RidgeRegression(ridge_lambda),
+            trainX,
+            trainY,
             lambda y_true, y_pred, *args: mean_square_error(y_true, y_pred))
         ridge_train_scores.append(ridge_train_score)
         ridge_validation_scores.append(ridge_validation_score)
 
         lasso_train_score, lasso_validation_score = cross_validate(
-            Lasso(lasso_lambda), X, y,
+            Lasso(lasso_lambda),
+            trainX,
+            trainY,
             lambda y_true, y_pred, *args: mean_square_error(y_true, y_pred))
         lasso_train_scores.append(lasso_train_score)
         lasso_validation_scores.append(lasso_validation_score)
@@ -132,11 +134,13 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
     fig.update_layout(
         title_text="The Average Validation And Train Scores As a Function Of "
-                   "regularization parameter", xaxis_title='X', yaxis_title='Y')
+                   "regularization parameter", xaxis_title='X',
+        yaxis_title='Y')
     fig.show()
     # Question 8 - Compare best Ridge model, best Lasso model and Least Squares model
     ridge_best_lambda = ridge_lambdas[np.argmin(ridge_validation_scores)]
     lasso_best_lambda = lasso_lambdas[np.argmin(lasso_validation_scores)]
+
     ridge_learner = RidgeRegression(ridge_best_lambda)
     lasso_learner = Lasso(lasso_best_lambda)
     linear_reg_learner = LinearRegression()
@@ -154,8 +158,8 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # select_polynomial_degree()
-    # select_polynomial_degree(noise=0)
-    # select_polynomial_degree(1500, 10)
+    select_polynomial_degree()
+    select_polynomial_degree(noise=0)
+    select_polynomial_degree(1500, 10)
     select_regularization_parameter()
     # raise NotImplementedError()
