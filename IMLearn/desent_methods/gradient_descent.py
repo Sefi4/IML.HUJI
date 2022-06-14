@@ -39,6 +39,7 @@ class GradientDescent:
         Callable function should receive as input a GradientDescent instance, and any additional
         arguments specified in the `GradientDescent.fit` function
     """
+
     def __init__(self,
                  learning_rate: BaseLR = FixedLR(1e-3),
                  tol: float = 1e-5,
@@ -76,7 +77,7 @@ class GradientDescent:
         self.max_iter_ = max_iter
         self.callback_ = callback
 
-    def fit(self, f: BaseModule, X: np.ndarray, y: np.ndarray):
+    def fit(self, f: BaseModule, X: np.ndarray = None, y: np.ndarray = None):
         """
         Optimize module using Gradient Descent iterations over given input samples and responses
 
@@ -119,4 +120,33 @@ class GradientDescent:
                 Euclidean norm of w^(t)-w^(t-1)
 
         """
-        raise NotImplementedError()
+        min_out = f.compute_output()
+        point = f.weights
+        for t in range(self.max_iter_):
+            step = self.learning_rate_.lr_step() * f.compute_jacobian()
+            delta = np.sum(step ** 2)
+            f.weights -= step
+
+            self.callback_(self,
+                           wights=f.weights,
+                           val=f.compute_output(),
+                           grad=f.compute_jacobian(),
+                           t=t,
+                           eta=self.learning_rate_,
+                           delta=delta)
+
+            if self.out_type_ == "best":
+                f_out = f.compute_output()
+                if f_out < min_out:
+                    min_out = f_out
+                    point = f.weights
+            if self.out_type_ == 'average':
+                point += f.weights
+
+            if delta < self.tol_:
+                if self.out_type_ == "last":
+                    return f.weights
+                if self.out_type_ == 'average':
+                    return point / f.weights.size
+                else:
+                    return point
