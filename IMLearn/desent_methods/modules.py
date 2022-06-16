@@ -78,7 +78,7 @@ class L1(BaseModule):
         output: ndarray of shape (1,)
             Value of function at point self.weights
         """
-        return np.abs(self.weights_)
+        return np.sum(np.abs(self.weights_))
 
     def compute_jacobian(self, **kwargs) -> np.ndarray:
         """
@@ -96,7 +96,7 @@ class L1(BaseModule):
         """
         if all(self.weights_ != 0):
             return np.sign(self.weights).T
-        return self.weights
+        return np.ones(self.weights_.size).T
 
 
 class LogisticModule(BaseModule):
@@ -252,9 +252,3 @@ class RegularizedModule(BaseModule):
             Weights to set for module
         """
         raise NotImplementedError()
-
-if __name__ == '__main__':
-    l2 = L2(np.array([1, 2, 3]))
-    x = l2.compute_output()
-    x = l2.compute_jacobian()
-    print(x)

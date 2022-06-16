@@ -128,7 +128,7 @@ class GradientDescent:
             f.weights -= step
 
             self.callback_(self,
-                           wights=f.weights,
+                           weights=f.weights,
                            val=f.compute_output(),
                            grad=f.compute_jacobian(),
                            t=t,

@@ -80,25 +80,34 @@ def get_gd_state_recorder_callback() -> Tuple[Callable[[], None], List[np.ndarra
 
     def callback(solver: GradientDescent, **kwargs):
         values.append(kwargs['val'])
-        weights.append(kwargs['wights'])
+        weights.append(kwargs['weights'])
 
     return callback, values, weights
 
 
 def compare_fixed_learning_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                  etas: Tuple[float] = (1, .1, .01, .001)):
-    callback1, l1_values, l1_weights = get_gd_state_recorder_callback()
-    callback2, l2_values, l2_weights = get_gd_state_recorder_callback()
-
     for eta in etas:
+        callback1, l1_values, l1_weights = get_gd_state_recorder_callback()
+        callback2, l2_values, l2_weights = get_gd_state_recorder_callback()
         GradientDescent(FixedLR(eta), callback=callback1).fit(L1(init))
         GradientDescent(FixedLR(eta), callback=callback2).fit(L2(init))
 
-    l1_values, l1_weights = np.array(l1_values), np.array(l1_weights)
-    l2_values, l2_weights = np.array(l2_values), np.array(l2_weights)
+        l1_values, l1_weights = np.array(l1_values), np.array(l1_weights)
+        l2_values, l2_weights = np.array(l2_values), np.array(l2_weights)
 
-    plot_descent_path(L1, l1_weights, "L1 Descent Path").show()
-    plot_descent_path(L2, l2_weights, "L2 Descent Path").show()
+        # plot_descent_path(L1, l1_weights, f"L1 Descent Path with learning rate {eta}").show()
+        # plot_descent_path(L2, l2_weights, f"L2 Descent Path with learning rate {eta}").show()
+
+        # fig = go.Figure(layout=dict(
+        #     title=f"Convergence Rate of L1 As A Function Of GD Iterations with eta {eta}"))
+        # fig.add_trace(go.Scatter(x=np.arange(l1_deltas.size), y=l1_deltas)).show()
+        # fig = go.Figure(layout=dict(
+        #     title=f"Convergence Rate of L2 As A Function Of GD Iterations with eta {eta}"))
+        # fig.add_trace(go.Scatter(x=np.arange(l2_deltas.size), y=l2_deltas)).show()
+        print(f"lowest loss of L1 norm with eta {eta}", l1_values[-1])
+        print(f"lowest loss of L2 norm with eta {eta}", l2_values[-1])
+
 
 def compare_exponential_decay_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                     eta: float = .1,
