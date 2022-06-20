@@ -120,33 +120,35 @@ class GradientDescent:
                 Euclidean norm of w^(t)-w^(t-1)
 
         """
-        min_out = f.compute_output()
-        point = f.weights
-        for t in range(self.max_iter_):
-            step = self.learning_rate_.lr_step() * f.compute_jacobian()
-            delta = np.sum(step ** 2)
-            f.weights -= step
-
-            self.callback_(self,
+        best, cur_min = f.weights.copy(), f.compute_output(X=X, y=y).copy()
+        avg_weights = None
+        delta = self.tol_
+        weights = f.weights.copy()
+        cur = f.weights
+        t = 0
+        while t < self.max_iter_ and delta >= self.tol_:
+            avg_weights = f.weights if t == 0 else avg_weights + f.weights
+            step = self.learning_rate_.lr_step(t=t) * f.compute_jacobian(X=X, y=y)
+            new_w = cur - step
+            delta = np.linalg.norm(cur - new_w)
+            cur = new_w
+            f.weights = new_w
+            val = f.compute_output(X=X, y=y)
+            self.callback_(gd=self,
                            weights=f.weights,
-                           val=f.compute_output(),
-                           grad=f.compute_jacobian(),
+                           val=f.compute_output(X=X, y=y),
                            t=t,
-                           eta=self.learning_rate_,
                            delta=delta)
 
-            if self.out_type_ == "best":
-                f_out = f.compute_output()
-                if f_out < min_out:
-                    min_out = f_out
-                    point = f.weights
-            if self.out_type_ == 'average':
-                point += f.weights
+            if val < cur_min:
+                cur_min = val
+                best = weights
 
-            if delta < self.tol_:
-                if self.out_type_ == "last":
-                    return f.weights
-                if self.out_type_ == 'average':
-                    return point / f.weights.size
-                else:
-                    return point
+            t += 1
+
+        if self.out_type_ == "last":
+            return f.weights
+        if self.out_type_ == 'best':
+            return best
+        if self.out_type_ == 'average':
+            return avg_weights / t
