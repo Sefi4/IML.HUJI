@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from typing import Tuple, List, Callable, Type
-
 from IMLearn import BaseModule
 from IMLearn.desent_methods import GradientDescent, FixedLR, ExponentialLR
 from IMLearn.desent_methods.modules import L1, L2
@@ -188,9 +187,12 @@ def load_data(path: str = "../datasets/SAheart.data", train_portion: float = .8)
 
 def fit_logistic_regression():
     # Load and split SA Heard Disease dataset
+
     X_train, y_train, X_test, y_test = load_data()
     X_train, y_train = X_train.to_numpy(), y_train.to_numpy()
+    X_test, y_test = X_test.to_numpy(), y_test.to_numpy()
 
+    # Plotting convergence rate of logistic regression over SA heart disease data
     solver = GradientDescent(max_iter=20000, learning_rate=FixedLR(1e-4))
     lg = LogisticRegression(penalty='l1', solver=solver)
     lg.fit(X_train, y_train)
@@ -209,32 +211,30 @@ def fit_logistic_regression():
     best_alpha = thresholds[np.argmax(tpr - fpr)]
     print("Best alpha", best_alpha)
 
-
-    X_test, y_test = X_test.to_numpy(), y_test.to_numpy()
-
-    # Plotting convergence rate of logistic regression over SA heart disease data
-
     # Fitting l1- and l2-regularized logistic regression models, using cross-validation to specify values
     # of regularization parameter
+    lambdas = (0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1)
+    for i in range(2):
+        train_scores = []
+        validation_scores = []
+        for lam in lambdas:
+            train_score, validation_score = cross_validate(
+                LogisticRegression(penalty=f'l{i + 1}', solver=solver, lam=lam),
+                X_train,
+                y_train,
+                misclassification_error)
+            train_scores.append(train_score)
+            validation_scores.append(validation_score)
 
-    # for i in range(2):
-    #     train_scores = []
-    #     validation_scores = []
-    #     for lam in (0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1):
-    #         train_score, validation_score = cross_validate(
-    #             LogisticRegression(
-    #                 penalty=f'l{i + 1}', solver=solver, lam=lam), X_train, y_train, misclassification_error)
-    #         train_scores.append(train_score)
-    #         validation_scores.append(validation_score)
-    #
-    #     best_lam = int(np.argmin(validation_scores))
-    #     lg = LogisticRegression(penalty=f'l{i + 1}', solver=solver, lam=best_lam)
-    #     lg.fit(X_train, y_train)
-    #     print("Best lambda", best_lam, "loss", lg.loss(X_test, y_test))
+        best_lam = lambdas[int(np.argmin(validation_scores))]
+        lg = LogisticRegression(penalty=f'l{i + 1}', solver=solver, lam=best_lam)
+        lg.fit(X_train, y_train)
+        print(f"Best lambda for L{i + 1} norm", best_lam)
+        print(f"Loss of L{i + 1} norm with best lbamgda", lg.loss(X_test, y_test))
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     compare_fixed_learning_rates()
     compare_exponential_decay_rates()
-    # fit_logistic_regression()
+    fit_logistic_regression()

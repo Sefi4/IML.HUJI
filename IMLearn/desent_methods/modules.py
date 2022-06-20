@@ -230,9 +230,8 @@ class RegularizedModule(BaseModule):
         output: ndarray of shape (n_in,)
             Derivative with respect to self.weights at point self.weights
         """
-        jac = self.regularization_module_.compute_jacobian(**kwargs)
-        jac = np.insert(jac, 0, 0, axis=0)
-        return self.fidelity_module_.compute_jacobian(**kwargs) + self.lam_ * jac
+        return self.fidelity_module_.compute_jacobian(**kwargs) + \
+               self.lam_ * self.regularization_module_.compute_jacobian(**kwargs)
 
     @property
     def weights(self):
@@ -258,9 +257,7 @@ class RegularizedModule(BaseModule):
         weights: ndarray of shape (n_in, n_out)
             Weights to set for module
         """
-        # self.weights_ = weights
         self.fidelity_module_.weights = weights
         if self.include_intercept_:
-            self.regularization_module_.weights = np.delete(weights, 0, axis=0)
-        else:
-            self.regularization_module_.weights = weights
+            weights[0] = 0
+        self.regularization_module_.weights = weights

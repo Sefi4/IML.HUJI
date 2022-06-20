@@ -46,7 +46,6 @@ def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray,
     """
     res = np.sum(y_true != y_pred)
     return res if not normalize else res / y_true.size
-    # raise NotImplementedError()
 
 
 def accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:

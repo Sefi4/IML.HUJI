@@ -130,8 +130,8 @@ class LogisticRegression(BaseEstimator):
             Probability of each sample being classified as `1` according to the fitted model
         """
         X = np.c_[np.ones(X.shape[0]), X] if self.include_intercept_ else X
-        temp = X & self.coefs_
-        return np.exp(temp) / (temp + 1)
+        temp = X.dot(self.coefs_)
+        return np.exp(temp) / (np.exp(temp) + 1)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
